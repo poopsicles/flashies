@@ -1,0 +1,12 @@
+version: "3"
+
+services:
+  mysql:
+    image: mysql:8.2
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: flash_db
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "${DATABASE_URL}", "--silent"]
+      timeout: 30s
+      retries: 10
