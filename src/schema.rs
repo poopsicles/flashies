@@ -7,6 +7,6 @@ diesel::table! {
         name -> Nullable<Varchar>,
         #[max_length = 255]
         hash -> Nullable<Varchar>,
-        data -> Nullable<Mediumblob>,
+        data -> Nullable<Longblob>,
     }
 }

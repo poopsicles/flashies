@@ -8,6 +8,7 @@ currently relies on just the hash of the file, maybe future versions would be mo
 
 ## endpoints:
 
+- `GET /`, returns the main page for testing.
 - `GET /health`, returns `200`.
 - `GET /check?sha=XXX`, returns `200 "in db"` if a file exists in the db with that hash, `404 "not in db"` otherwise
 - `GET /get?sha=XXX`, returns a `200 <file with the given hash>` on success, `404` on error.
@@ -31,4 +32,6 @@ so ideal flow would be:
 
 ## running:
 
-clone and run with `cargo build`.
+run with `docker compose up` if you prefer a containerised approach (this makes a Mysql container, waits for it to be initialised, builds the app as a container too, and exposes that)
+
+clone and run with `cargo build` if you have the [rust toolchain](https://rustup.rs) installed (make sure to modify [.env](.env) to point to your own database).

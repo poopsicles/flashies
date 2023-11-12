@@ -8,6 +8,15 @@ use crate::models::NewFile;
 pub mod models;
 pub mod schema;
 
+use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
+pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
+
+pub fn run_migrations(conn: &mut MysqlConnection) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    conn.run_pending_migrations(MIGRATIONS)?;
+
+    Ok(())
+}
+
 pub fn establish_connection() -> MysqlConnection {
     dotenv().ok();
 

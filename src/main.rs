@@ -3,19 +3,23 @@ use std::collections::HashMap;
 
 use self::models::File;
 use axum::{
-    extract::{Query, Multipart, DefaultBodyLimit},
-    http::StatusCode,
+    extract::{DefaultBodyLimit, Multipart, Query},
+    http::{header, HeaderName, StatusCode},
+    response::Html,
     routing::{get, post},
     Json, Router,
 };
-use backend::*;
+use flashies::*;
 use diesel::prelude::*;
 use tower_http::cors::CorsLayer;
 
 #[tokio::main]
 async fn main() {
-    // build our application with a single route
+    let connection = &mut establish_connection();
+    run_migrations(connection).unwrap();
+
     let app = Router::new()
+        .route("/", get(index))
         .route("/health", get(|| async { "OK" }))
         .route("/check", get(check_file_hash))
         .route("/get", get(get_file))
@@ -23,12 +27,17 @@ async fn main() {
         .route("/post", post(post_file))
         .layer(CorsLayer::permissive())
         .layer(DefaultBodyLimit::max(20971520));
-    
+
     // run it with hyper on localhost:3000
+    println!("Ready.");
     axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
         .serve(app.into_make_service())
         .await
         .unwrap();
+}
+
+async fn index() -> Html<&'static str> {
+    Html(include_str!("../index.html"))
 }
 
 // checks if a file with the given hash exists in the db
@@ -52,7 +61,7 @@ async fn check_file_hash(Query(sha): Query<HashMap<String, String>>) -> (StatusC
 // returns the file with the given hash in the db
 async fn get_file(
     Query(sha): Query<HashMap<String, String>>,
-) -> Result<(StatusCode, Vec<u8>), StatusCode> {
+) -> Result<(StatusCode, [(HeaderName, String); 1], Vec<u8>), StatusCode> {
     use self::schema::files::dsl::*;
 
     let connection = &mut establish_connection();
@@ -62,8 +71,17 @@ async fn get_file(
         .select(File::as_select())
         .first(connection);
 
-    r.map(|x| Ok((StatusCode::OK, x.data.to_owned().unwrap().clone())))
-        .unwrap_or(Err(StatusCode::NOT_FOUND))
+    r.map(|x| {
+        Ok((
+            StatusCode::OK,
+            [(
+                header::CONTENT_DISPOSITION,
+                format!("attachment; filename=\"{}\"", x.name.unwrap()),
+            )],
+            x.data.to_owned().unwrap().clone(),
+        ))
+    })
+    .unwrap_or(Err(StatusCode::NOT_FOUND))
 }
 
 // posts a file to the db, returns the hash
