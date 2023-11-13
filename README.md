@@ -35,3 +35,10 @@ so ideal flow would be:
 run with `docker compose up` if you prefer a containerised approach (this makes a Mysql container, waits for it to be initialised, builds the app as a container too, and exposes that)
 
 clone and run with `cargo build` if you have the [rust toolchain](https://rustup.rs) installed (make sure to modify [.env](.env) to point to your own database).
+
+## vid:
+
+https://github.com/poopsicles/flashies/assets/87488715/f5a77cc9-5913-4375-b19c-4b8a86f60772
+
+
+
